@@ -2,7 +2,7 @@
 
 ## How to use:
 ```
-$ printf 'Man' | ./encode_base64.sh                                      ✘
+$ printf 'Man' | ./encode_base64.sh
 TWFu
 ```
 
