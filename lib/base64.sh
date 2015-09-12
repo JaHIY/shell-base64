@@ -104,14 +104,5 @@ decode_base64() {
 }
 
 urlsafe_decode_base64() {
-    tr -d '[[:space:]]' | tr '_-' '/+' | od -An -tu1 -v | grep -o '[^[:space:]]\{1,\}' | \
-        { local len=0
-        while read -r input; do
-            printf "$(chr "$input")"
-            len="$(calc "$len + 1")"
-        done
-
-        local padding_width="$(calc "4 - ($len % 4)")"
-        printf '%s' "$(repeat '=' "$padding_width")"; } | \
-        decode_base64
+    tr -C -d '[[:alnum:]_-]' | tr '_-' '/+' | decode_base64
 }
