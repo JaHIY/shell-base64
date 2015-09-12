@@ -1,126 +1,86 @@
 #!/bin/sh -
 
 calc() {
-    printf '%s\n' "$*" | bc
-}
+    printf '%s\n' \
+        'define bit_and (x, y) {
+            auto min, max, d, i, ret
+            i = 1
+            ret = 0
+            if (x > y) {
+                min = y
+                max = x
+            } else {
+                min = x
+                max = y
+            }
+            while (min > 0) {
+                d=min % 2
+                if (d == (max % 2)) {
+                    ret += d * i
+                }
+                i *= 2
+                min /= 2
+                max /= 2
+            }
+            return (ret)
+        }
 
-add() {
-    calc "$1" '+' "$2"
-}
+        define bit_or (x, y) {
+            auto min, max, d, ret, i
+            i = 1
+            ret = 0
+            if (x > y) {
+                min = y
+                max = x
+            } else {
+                min = x
+                max = y
+            }
+            while (max > 0) {
+                d = max % 2
+                if (d == (min % 2)) {
+                    ret += d * i
+                } else {
+                    ret += i
+                }
+                i *= 2
+                min /= 2
+                max /= 2
+            }
+            return (ret)
+        }
 
-minus() {
-    calc "$1" '-' "$2"
-}
+        define bit_xor (x, y) {
+            auto min, max, ret, i
+            i = 1
+            ret = 0
+            if (x > y) {
+                min = y
+                max = x
+            } else {
+                min = x
+                max = y
+            }
+            while (max > 0) {
+                if ((max % 2) != (min % 2)) {
+                    ret += i
+                }
+                i *= 2
+                min /= 2
+                max /= 2
+            }
+            return (ret)
+        }
 
-multiply() {
-    calc "$1" '*' "$2"
-}
+        define bit_not (x) {
+            return (-1 - x)
+        }
 
-div() {
-    calc "$1" '/' "$2"
-}
+        define bit_left_shift (x, y) {
+            return (x * 2 ^ y)
+        }
 
-mod() {
-    calc "$1" '%' "$2"
-}
-
-bit_and() {
-    local min=0
-    local max=0
-    local d=0
-    local ret=0
-    local i=1
-    if [ "$1" -gt "$2" ]; then
-        min="$2"
-        max="$1"
-    else
-        min="$1"
-        max="$2"
-    fi
-    while [ "$min" -gt 0 ]; do
-        d="$(mod "$min" 2)"
-        if [ "$d" -eq "$(mod "$max" 2)" ]; then
-            ret="$(add "$ret" "$(multiply "$d" "$i")")"
-        fi
-        i="$(multiply "$i" 2)"
-        min="$(div "$min" 2)"
-        max="$(div "$max" 2)"
-    done
-    printf '%s\n' "$ret"
-}
-
-bit_or() {
-    local min=0
-    local max=0
-    local d=0
-    local ret=0
-    local i=1
-    if [ "$1" -gt "$2" ]; then
-        min="$2"
-        max="$1"
-    else
-        min="$1"
-        max="$2"
-    fi
-    while [ "$max" -gt 0 ]; do
-        d="$(mod "$max" 2)"
-        if [ "$d" -eq "$(mod "$min" 2)" ]; then
-            ret="$(add "$ret" "$(multiply "$d" "$i")")"
-        else
-            ret="$(add "$ret" "$i")"
-        fi
-        i="$(multiply "$i" 2)"
-        min="$(div "$min" 2)"
-        max="$(div "$max" 2)"
-    done
-    printf '%s\n' "$ret"
-}
-
-bit_xor() {
-    local min=0
-    local max=0
-    local ret=0
-    local i=1
-    if [ "$1" -gt "$2" ]; then
-        min="$2"
-        max="$1"
-    else
-        min="$1"
-        max="$2"
-    fi
-    while [ "$max" -gt 0 ]; do
-        if [ "$(mod "$max" 2)" -ne "$(mod "$min" 2)" ]; then
-            ret="$(add "$ret" "$i")"
-        fi
-        i="$(multiply "$i" 2)"
-        min="$(div "$min" 2)"
-        max="$(div "$max" 2)"
-    done
-    printf '%s\n' "$ret"
-}
-
-bit_not() {
-    printf '%s\n' "$(minus -1 "$1")"
-}
-
-bit_left_shift() {
-    local var="$1"
-    local x="$2"
-    if [ "$var" -ne 0 ]; then
-        while [ "$x" -gt 0 ]; do
-            var="$(multiply "$var" 2)"
-            x="$(minus "$x" 1)"
-        done
-    fi
-    printf '%s\n' "$var"
-}
-
-bit_right_shift() {
-    local var="$1"
-    local x="$2"
-    while [ "$x" -gt 0 ] && [ "$var" -ne 0 ]; do
-        var="$(div "$var" 2)"
-        x="$(minus "$x" 1)"
-    done
-    printf '%s\n' "$var"
+        define bit_right_shift(x, y) {
+            return (x / 2 ^ y)
+        }' "$*" | bc
 }

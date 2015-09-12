@@ -9,14 +9,14 @@ strict_encode_base64() {
       { local buf=0
         local iter=0
         while read -r input; do
-            buf="$(bit_or "$(bit_left_shift "$buf" 8)" "$(bit_and "$input" 255)")"
-            iter="$(add "$iter" 1)"
+            buf="$(calc "bit_or(bit_left_shift($buf, 8), bit_and($input, 255))")"
+            iter="$(calc "$iter + 1")"
 
             if [ "$iter" -eq 3 ]; then
                 local i=18
                 while true; do
-                    printf '%s' "$(substr "$base64chars" "$(bit_and "$(bit_right_shift "$buf" "$i")" 63)" 1)"
-                    i="$(minus "$i" 6)"
+                    printf '%s' "$(substr "$base64chars" "$(calc "bit_and(bit_right_shift($buf, $i), 63)")" 1)"
+                    i="$(calc "$i - 6")"
                     [ "$i" -lt 0 ] && break
                 done
                 iter=0
@@ -25,20 +25,20 @@ strict_encode_base64() {
         done
 
         if [ "$iter" -gt 0 ]; then
-            local p="$(minus 3 "$iter")"
+            local p="$(calc "3 - $iter")"
 
             case "$iter" in
                 '1')
-                    buf="$(bit_left_shift "$buf" 4)"
+                    buf="$(calc "bit_left_shift($buf, 4)")"
                     ;;
                 '2')
-                    buf="$(bit_left_shift "$buf" 2)"
+                    buf="$(calc "bit_left_shift($buf, 2)")"
                     ;;
             esac
 
             while true; do
-                printf '%s' "$(substr "$base64chars" "$(bit_and "$(bit_right_shift "$buf" "$(multiply "$iter" 6)")" 63)" 1)"
-                iter="$(minus "$iter" 1)"
+                printf '%s' "$(substr "$base64chars" "$(calc "bit_and(bit_right_shift($buf, $iter * 6), 63)")" 1)"
+                iter="$(calc "$iter - 1")"
                 [ "$iter" -lt 0 ] && break
             done
 
@@ -71,14 +71,14 @@ decode_base64() {
                 *)
                     local c="$(index "$base64chars" "$input")"
                     [ "$c" -lt 0 ] && continue
-                    buf="$(bit_or "$(bit_left_shift "$buf" 6)" "$c")"
-                    iter="$(add "$iter" 1)"
+                    buf="$(calc "bit_or(bit_left_shift($buf, 6), $c)")"
+                    iter="$(calc "$iter + 1")"
 
                     if [ "$iter" -eq 4 ]; then
                         local i=16
                         while true; do
-                            printf '%s' "$(chr "$(bit_and "$(bit_right_shift "$buf" "$i")" 255)")"
-                            i="$(minus "$i" 8)"
+                            printf '%s' "$(chr "$(calc "bit_and(bit_right_shift($buf, $i), 255)")")"
+                            i="$(calc "$i - 8")"
                             [ "$i" -lt 0 ] && break
                         done
                         iter=0
@@ -90,13 +90,13 @@ decode_base64() {
 
         case "$iter" in
             '2')
-                printf '%s' "$(chr "$(bit_and "$(bit_right_shift "$buf" 4)" 255)")"
+                printf '%s' "$(chr "$(calc "bit_and(bit_right_shift($buf, 4), 255)")")"
                 ;;
             '3')
                 local i=10
                 while true; do
-                    printf '%s' "$(chr "$(bit_and "$(bit_right_shift "$buf" "$i")" 255)")"
-                    i="$(minus "$i" 8)"
+                    printf '%s' "$(chr "$(calc "bit_and(bit_right_shift($buf, $i), 255)")")"
+                    i="$(cal  "$i - 8")"
                     [ "$i" -lt 0 ] && break
                 done
                 ;;
@@ -108,10 +108,10 @@ urlsafe_decode_base64() {
         { local len=0
         while read -r input; do
             printf "$(chr "$input")"
-            len="$(add "$len" 1)"
+            len="$(calc "$len + 1")"
         done
 
-        local padding_width="$(minus 4 "$(mod "$len" 4)")"
+        local padding_width="$(calc "4 - ($len % 4)")"
         printf '%s' "$(repeat '=' "$padding_width")"; } | \
         decode_base64
 }
