@@ -29,4 +29,4 @@ TWFuIGlzIGRpc3Rpbmd1aXNoZWQsIG5vdCBvbmx5IGJ5IGhpcyByZWFzb24sIGJ1dCBieSB0aGlzIHNp
 
 `urlsafe_decode_base64.sh` can only decode strings from `urlsafe_encode_base64.sh`.
 
-Warning: If the input string is long, it may take long time to encode/decode it.
+Warning: If the input string is long, it may take a long time to encode/decode it.
