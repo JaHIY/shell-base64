@@ -3,7 +3,7 @@
 readlink_canonicalize() (
     cd "$(dirname "$1")"
 
-    local target_file="$(basename "$1")"
+    target_file="$(basename "$1")"
 
     while [ -L "$target_file" ]; do
         target_file="$(readlink "$target_file")"
@@ -11,7 +11,7 @@ readlink_canonicalize() (
         target_file="$(basename "$target_file")"
     done
 
-    local phys_dir="$(pwd -P)"
+    phys_dir="$(pwd -P)"
     printf '%s\n' "${phys_dir}/${target_file}"
 )
 
